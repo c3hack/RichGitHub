@@ -19,17 +19,14 @@ const caxy = (htmlOld, htmlNew) =>
 app.post('/', (req, res, next) => {
   const htmlNew = req.body.htmlNew
   const htmlOld = req.body.htmlOld
-  const diffs = Promise.all(
-    htmlOld
-      .map((old, i) => caxy(old.content, htmlNew[i].content)
+  return caxy(htmlOld.content, htmlNew.content)
       .then(response => ({
-        diff: response.data, path: old.path
+        diff: response.data, path: htmlOld.path
       }))
-    ))
-    .then(diffs => res.send(diffs))
-    .catch(next)
-});
-  
+      .then(x => res.send(x))
+      .catch(next)
+})
+
 app.listen(8000, () => {
   console.log('Example app listening on port 8000!')
 });
