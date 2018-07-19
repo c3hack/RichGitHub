@@ -50,7 +50,7 @@ const getAndShowDiff = path => () => {
             iframe.style = 'width: 100%; height: 100%'
             iframe.frameBorder = 0
             const style = document.createElement('style')
-            const cssFile = fetch(`https://api.github.com/repos${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}contents/content.css`).then(res => res.json())
+            const cssFile = fetch(`https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}contents/content.css`).then(res => res.json())
             debugger
             cssContentDecoded = cssFile.then(({ content, path }) =>  {
                 debugger
@@ -103,7 +103,7 @@ if (location.pathname.match(/pull\/\d+\/files/)) {
         ...pairsAcc,
         [pull.filename]: {
           base: pull.contents_url,
-          head: `https://api.github.com/repos/${headUser}/${repo}/contents/${pull.filename}`
+          head: `https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}contents/${pull.filename}`
         }
       }),
       {}

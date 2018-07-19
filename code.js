@@ -25,7 +25,7 @@ try {
 ClassicEditor
     .create(document.querySelector( '#richGitHub' ) )
     .then(editor => {
-        editor.setData(gitHubDrafts[location.href].content || document.querySelector('textarea').value)
+        editor.setData(gitHubDrafts[location.href] && gitHubDrafts[location.href].content || document.querySelector('textarea').value)
         const codeMirrorInstance = document.querySelector('.CodeMirror').CodeMirror
         const editorData = editor.getData()
         codeMirrorInstance.doc.setValue(editorData)
