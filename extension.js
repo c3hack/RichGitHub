@@ -46,7 +46,25 @@ const getAndShowDiff = path => () => {
                 `[data-path="${path}"]`
             )
             const parent = fileHeader.parentElement
-            parent.innerHTML = fileHeader.outerHTML + d.diff.htmlDiff
+            const iframe = document.createElement('iframe')
+            iframe.style = 'width: 100%; height: 100%'
+            iframe.frameBorder = 0
+            const style = document.createElement('style')
+            const cssFile = fetch(`https://api.github.com/repos${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}contents/content.css`).then(res => res.json())
+            debugger
+            cssContentDecoded = cssFile.then(({ content, path }) =>  {
+                debugger
+                const decoded = atob(content)
+                style.innerHTML = decoded
+                parent.innerHTML = ''
+                parent.appendChild(fileHeader)
+                parent.appendChild(iframe)
+                iframe.contentDocument.head.appendChild(style)
+                iframe.contentDocument.body.innerHTML = d.diff.htmlDiff
+            })
+        
+                // parent.innerHTML = fileHeader.outerHTML + d.diff.htmlDiff
+          
         })
   })
   const fetchDiff = (htmlOld, htmlNew) =>

@@ -19,10 +19,9 @@
     "content_scripts": [
         {
           "matches": ["<all_urls>"],
-          "css": ["content.css", "quill.css"],
-          "js": ["quill.js", "ckeditor.js", "extension.js"]
+          "js": ["extension.js"]
         }
       ],
-      "web_accessible_resources": ["quill.js", "ckeditor.js","ckeditor4.js", "code.js"],
+      "web_accessible_resources": ["ckeditor.js", "code.js"],
     "manifest_version": 2
   }

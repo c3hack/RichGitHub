@@ -13,8 +13,8 @@ app.use(cors())
 
 const caxy = (htmlOld, htmlNew) =>
   axios.post('http://php-htmldiff-api.caxy.com/diff/caxy_htmldiff', {
-    htmlOld,
-    htmlNew
+    htmlNew,
+    htmlOld
   })
 app.post('/', (req, res, next) => {
   const htmlNew = req.body.htmlNew
