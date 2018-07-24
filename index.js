@@ -19,7 +19,9 @@ const caxy = (htmlOld, htmlNew) =>
 app.post('/', (req, res, next) => {
   const htmlNew = req.body.htmlNew
   const htmlOld = req.body.htmlOld
-  return caxy(htmlOld.content, htmlNew.content)
+  console.log(htmlNew)
+  console.log(htmlOld)
+  return caxy(htmlOld, htmlNew)
       .then(response => ({
         diff: response.data, path: htmlOld.path
       }))

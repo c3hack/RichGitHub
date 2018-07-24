@@ -26,20 +26,26 @@ let headContentFiles
 let pairedUrls
 let headContentDecoded
 let baseContentDecoded
+const isQuickPull = location.pathname.includes('...') && location.pathname.split('/')[3] === 'compare' && location.href.slice(location.href.indexOf('?')).includes('quick_pull')
+const draftsJSON = JSON.parse(localStorage['githubDraft'])
+const currentDraft = localStorage['currentDraft']
+if (isQuickPull && draftsJSON && currentDraft) {
+  delete localStorage['currentDraft']
+  if (currentDraft) delete draftsJSON[currentDraft]
+  localStorage['githubDraft'] = JSON.stringify(draftsJSON)
+}
+
+const getString = arrayBuffer => {
+  const uint8array = new TextEncoder("utf-8").encode("¢");
+  const string = new TextDecoder("utf-8").decode(arrayBuffer.value)
+  return string
+}
+
 const getAndShowDiff = path => () => {
-    debugger
   contentUrls.then(contents => {
-    baseContentFile = fetch(contents[path].base).then(res => res.json())
-    headContentFile = fetch(contents[path].head).then(res => res.json())
-    headContentDecoded = headContentFile.then(({ content, path }) => ({
-      path,
-      content: atob(content)
-    }))
-    baseContentDecoded = baseContentFile.then(({ content, path }) => ({
-      path,
-      content: atob(content)
-    }))
-    Promise.all([ baseContentDecoded, headContentDecoded ])
+    baseContentFile = fetch(contents[path].base).then(res => res.body.getReader().read()).then(getString)
+    headContentFile = fetch(contents[path].head).then(res => res.body.getReader().read()).then(getString)
+    Promise.all([ baseContentFile, headContentFile ])
         .then(cs => fetchDiff(...cs))
         .then(d => {
             const fileHeader = document.querySelector(
@@ -50,12 +56,10 @@ const getAndShowDiff = path => () => {
             iframe.style = 'width: 100%; height: 100%'
             iframe.frameBorder = 0
             const style = document.createElement('style')
-            const cssFile = fetch(`https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}contents/content.css`).then(res => res.json())
-            debugger
-            cssContentDecoded = cssFile.then(({ content, path }) =>  {
-                debugger
-                const decoded = atob(content)
-                style.innerHTML = decoded
+            const cssUrl = `https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}${base.slice(base.indexOf(':') + 1)}/content.css`
+            const cssFile = fetch(cssUrl).then(res => res.body.getReader().read()).then(getString)
+            cssContentDecoded = cssFile.then(css =>  {
+                style.innerHTML = css
                 parent.innerHTML = ''
                 parent.appendChild(fileHeader)
                 parent.appendChild(iframe)
@@ -81,29 +85,28 @@ const getAndShowDiff = path => () => {
       body: JSON.stringify({ htmlOld, htmlNew }) // body data type must match "Content-Type" header
     }).then(res => res.json())
 }
-debugger
 if (location.pathname.match(/pull\/\d+\/files/)) {
-    debugger
   headRef = document.querySelector('.gh-header-meta .head-ref').title
-  base = document.querySelector('.gh-header-meta .head-ref').title
+  base = document.querySelector('.gh-header-meta .base-ref').title
   headUser = headRef.split('/')[0]
   repo = location.pathname.split('/')[2]
   filePaths = [...document.querySelectorAll('.file-info a')].map(
     x => x.outerText
   )
-  basePulls = fetch(
-    `https://api.github.com/repos${location.pathname.replace(
-      '/pull/',
-      '/pulls/'
-    )}`
-  ).then(res => res.json())
-  contentUrls = basePulls.then(pulls =>
+  const filesUrl = `https://api.github.com/repos${location.pathname.replace(
+    '/pull/',
+    '/pulls/'
+  )}`
+  const pullUrl = filesUrl.slice(0, filesUrl.length - 6)
+  basePulls = fetch(filesUrl).then(res => res.json())
+  const pull = fetch(pullUrl).then(res => res.json())
+  contentUrls = Promise.all([basePulls, pull]).then(([pulls, pull]) =>
     pulls.reduce(
-      (pairsAcc, pull, i) => ({
+      (pairsAcc, p, i) => ({
         ...pairsAcc,
-        [pull.filename]: {
-          base: pull.contents_url,
-          head: `https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}contents/${pull.filename}`
+        [p.filename]: {
+          base: `https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}${pull.base.ref}/${p.filename}`,
+          head: `https://raw.githubusercontent.com${location.pathname.match(/^\/[\w\d]+\/[\w\d]+\//)}${pull.head.ref}/${p.filename}`
         }
       }),
       {}
