@@ -10,7 +10,7 @@ draftsList.id = 'richGitHubDrafts'
 setTimeout(() => {
     document.body.querySelector('.octotree_views').appendChild(draftsList)
 
-}, 5000)
+}, 2000)
 Object.entries(gitHubDrafts).forEach(([ url, { title } ]) => {
     const li = document.createElement('li')
     li.innerHTML = `<a href="${url}">${title}</a>`
@@ -38,5 +38,5 @@ ClassicEditor
         } );
     })
     .catch( error => {
-        console.error( error )
+        // console.error( error )
     })
